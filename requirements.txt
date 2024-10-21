@@ -1,0 +1,8 @@
+docx==0.2.4
+fitz==0.0.1.dev2
+PyQt5==5.15.11
+PyQt5_sip==12.15.0
+python_docx==1.1.2
+selenium==4.25.0
+tqdm==4.66.5
+webdriver_manager==4.0.2
