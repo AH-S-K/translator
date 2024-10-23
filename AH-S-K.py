@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from PyQt5.QtWidgets import QApplication, QFileDialog
 from docx import Document
-from docx.shared import (Inches , Pt)
+from docx.shared import Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import fitz
 import re
@@ -17,6 +17,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from tqdm import tqdm
+import ctypes
 def extract_text_from_pdf(pdf_file_path):
     if not os.path.exists(pdf_file_path):
         print(f"Error: The file {pdf_file_path} does not exist.")
@@ -49,6 +50,13 @@ def translate_text(pages_text):
     options.add_argument("--incognito")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+    user32 = ctypes.windll.user32
+    screen_width = user32.GetSystemMetrics(0)
+    screen_height = user32.GetSystemMetrics(1)
+    chrome_window_x = int(screen_width * 0.4)
+    chrome_window_y = int(screen_height * 0.01)
+    options.add_argument(f"window-position={chrome_window_x},{chrome_window_y}")
+    options.add_argument(f"window-size={int(screen_width * 0.4)},{int(screen_height * 0.8)}")
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
@@ -116,10 +124,6 @@ def pdf_to_word_with_translations(pdf_path, translations, output_docx_path):
             rtl_element = OxmlElement('w:rtl')
             rtl_element.set(qn('w:val'), '1')
             run_element.get_or_add_rPr().append(rtl_element)
-    for paragraph in doc.paragraphs:
-        for run in paragraph.runs:
-            run.font.name = 'B Nazanin'
-            run.font.size = Pt(14)
     doc.save(output_docx_path)
 if __name__ == "__main__":
     app = QApplication([])
